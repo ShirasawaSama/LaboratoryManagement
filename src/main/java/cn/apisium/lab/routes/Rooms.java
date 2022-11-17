@@ -7,11 +7,15 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.sqlclient.Row;
+import org.jetbrains.annotations.NotNull;
 
+/**
+ * Rooms route
+ */
 public final class Rooms {
 	private final MainVerticle main;
 
-	public Rooms(MainVerticle main, Router router) {
+	public Rooms(@NotNull MainVerticle main, @NotNull Router router) {
 		this.main = main;
 
 		router.get("/api/rooms").respond(this::handleFetchRooms);
@@ -19,11 +23,13 @@ public final class Rooms {
 		router.delete("/api/room").respond(this::handleDeleteUser);
 	}
 
-	private Future<?> handleFetchRooms(RoutingContext ctx) {
+	@NotNull
+	private Future<?> handleFetchRooms(@NotNull RoutingContext ctx) {
 		return main.forQuery("SELECT * FROM ROOMS;").mapTo(Row::toJson).execute(null);
 	}
 
-	private Future<?> handlePutRoom(RoutingContext ctx) {
+	@NotNull
+	private Future<?> handlePutRoom(@NotNull RoutingContext ctx) {
 		var body = ctx.body().asJsonObject();
 		var id = body.getInteger("id");
 		return main.forUpdate(id == null
@@ -34,7 +40,8 @@ public final class Rooms {
 				.map(it -> it.rowCount() == 1 ? new JsonObject() : new ErrorResponse("Failed to update data."));
 	}
 
-	private Future<?> handleDeleteUser(RoutingContext ctx) {
+	@NotNull
+	private Future<?> handleDeleteUser(@NotNull RoutingContext ctx) {
 		return main.forUpdate("DELETE FROM ROOMS WHERE id = #{id};")
 				.mapFrom(RoomDataObjectParametersMapper.INSTANCE)
 				.execute(new RoomDataObject(ctx.body().asJsonObject().getInteger("id")))

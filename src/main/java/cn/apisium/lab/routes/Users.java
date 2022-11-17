@@ -9,11 +9,15 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.sqlclient.Row;
+import org.jetbrains.annotations.NotNull;
 
+/**
+ * Users route
+ */
 public final class Users {
 	private final MainVerticle main;
 
-	public Users(MainVerticle main, Router router) {
+	public Users(@NotNull MainVerticle main, @NotNull Router router) {
 		this.main = main;
 
 		router.get("/api/users").respond(this::handleFetchUsers);
@@ -21,10 +25,12 @@ public final class Users {
 		router.delete("/api/user").respond(this::handleDeleteUser);
 	}
 
+	@NotNull
 	private Future<?> handleFetchUsers(RoutingContext ctx) {
 		return main.forQuery("SELECT * FROM USERS;").mapTo(Row::toJson).execute(null);
 	}
 
+	@NotNull
 	private Future<?> handlePutUser(RoutingContext ctx) {
 		var body = ctx.body().asJsonObject();
 		var id = body.getInteger("id");
@@ -36,6 +42,7 @@ public final class Users {
 				.map(it -> it.rowCount() == 1 ? new JsonObject() : new ErrorResponse("Failed to update data."));
 	}
 
+	@NotNull
 	private Future<?> handleDeleteUser(RoutingContext ctx) {
 		return main.forUpdate("DELETE FROM USERS WHERE ID = #{id};")
 				.mapFrom(UserDataObjectParametersMapper.INSTANCE)

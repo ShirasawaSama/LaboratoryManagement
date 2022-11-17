@@ -1,6 +1,6 @@
-# LaboratoryManagement
+# LaboratoryManagement ![https://vertx.io](https://img.shields.io/badge/vert.x-4.3.5-purple.svg)
 
-![https://vertx.io](https://img.shields.io/badge/vert.x-4.3.5-purple.svg)
+A Simple Laboratory Management System.
 
 ## Build
 

@@ -165,3 +165,7 @@ nbdist/
 
 ### Database ###
 default.*.db
+
+### Web ###
+node_modules
+dist

@@ -4,6 +4,7 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.templates.annotations.ParametersMapped;
 import io.vertx.sqlclient.templates.annotations.RowMapped;
+import org.jetbrains.annotations.NotNull;
 
 @DataObject
 @RowMapped
@@ -21,7 +22,7 @@ public final class RoomDataObject {
 		owner = json.getInteger("owner");
 	}
 
-	public RoomDataObject(int id, String name, int owner) {
+	public RoomDataObject(int id, @NotNull String name, int owner) {
 		this.id = id;
 		this.name = name;
 		this.owner = owner;
@@ -39,11 +40,12 @@ public final class RoomDataObject {
 		this.id = id;
 	}
 
+	@NotNull
 	public String getName() {
 		return name;
 	}
 
-	public void setName(String name) {
+	public void setName(@NotNull String name) {
 		this.name = name;
 	}
 

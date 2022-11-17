@@ -8,6 +8,7 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.jdbcclient.JDBCConnectOptions;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.*;
@@ -48,7 +49,6 @@ public final class MainVerticle extends AbstractVerticle {
 		return new SqlTemplateImpl<>(pool, sqlTemplate, query -> query.collecting(SqlTemplateImpl.NULL_COLLECTOR), sqlTemplate::mapTuple);
 	}
 
-
 	@Override
 	public void start(Promise<Void> startPromise) {
 		initDatabase();
@@ -56,22 +56,31 @@ public final class MainVerticle extends AbstractVerticle {
 		vertx.createHttpServer().requestHandler(initRoutes()).listen(8888, http -> {
 			if (http.succeeded()) {
 				startPromise.complete();
-				System.out.println("HTTP server started on port 8888");
+				logger.info("HTTP server started on port 8888");
 			} else {
 				startPromise.fail(http.cause());
 			}
 		});
 	}
 
+	/**
+	 * Init routers.
+	 *
+	 * @return Initialized routers.
+	 */
 	@NotNull
 	private Router initRoutes() {
 		Router router = Router.router(vertx);
 		router.route().handler(BodyHandler.create());
+		router.route("/*").handler(StaticHandler.create("dist"));
 		new Users(this, router);
 		new Rooms(this, router);
 		return router;
 	}
 
+	/**
+	 * Init database and create tables.
+	 */
 	private void initDatabase() {
 		pool = JDBCPool.pool(
 				vertx,
@@ -95,7 +104,7 @@ public final class MainVerticle extends AbstractVerticle {
 				);
 				""").execute(ar -> {
 			if (ar.succeeded()) {
-				logger.info("Database initialized");
+				logger.info("Database initialized.");
 			} else {
 				logger.error("Could not initialize the database:");
 				ar.cause().printStackTrace();
