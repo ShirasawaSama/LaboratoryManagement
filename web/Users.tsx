@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { alpha } from '@mui/material/styles'
 import { useSnackbar, SnackbarKey } from 'notistack'
+import { DataGrid, GridColumns, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid'
 import type { User } from './types'
-import TableContainer from '@mui/material/TableContainer'
 import Paper from '@mui/material/Paper'
-import Table from '@mui/material/Table'
-import TableCell from '@mui/material/TableCell'
-import TableBody from '@mui/material/TableBody'
-import TableHead from '@mui/material/TableHead'
-import TableRow from '@mui/material/TableRow'
 import Typography from '@mui/material/Typography'
-import Checkbox from '@mui/material/Checkbox'
 import Toolbar from '@mui/material/Toolbar'
 import Tooltip from '@mui/material/Tooltip'
 import IconButton from '@mui/material/IconButton'
@@ -23,7 +17,6 @@ import Dialog from '@mui/material/Dialog'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
-import TablePagination from '@mui/material/TablePagination'
 
 const Users: React.FC<{ users: User[], refreshUsers: () => void }> = ({ users, refreshUsers }) => {
   const [open, setOpen] = React.useState(false)
@@ -31,11 +24,38 @@ const Users: React.FC<{ users: User[], refreshUsers: () => void }> = ({ users, r
   const [selected, setSelected] = useState<number[]>([])
   const [updateNameId, setUpdateNameId] = useState<number | null>()
   const [snack, setSnack] = useState<SnackbarKey | null>(null)
-  const [page, setPage] = React.useState(0)
-  const [rowsPerPage, setRowsPerPage] = React.useState(5)
   const { enqueueSnackbar, closeSnackbar } = useSnackbar()
   const numSelected = selected.length
   useEffect(() => setSelected([]), [users])
+
+  const columns: GridColumns = [
+    { field: 'ID', headerName: 'ID', width: 50 },
+    {
+      field: 'NAME',
+      headerName: '姓名',
+      width: 200
+    },
+    {
+      field: 'actions',
+      type: 'actions',
+      headerName: '操作',
+      width: 50,
+      cellClassName: 'actions',
+      getActions: ({ row }) => [
+        <GridActionsCellItem
+          icon={<EditIcon />}
+          label='编辑'
+          key='edit'
+          color='inherit'
+          onClick={() => {
+            setName(row.NAME)
+            setUpdateNameId(row.ID)
+            setOpen(true)
+          }}
+        />
+      ]
+    }
+  ]
 
   return (
     <Paper sx={{ width: '100%', mb: 2 }}>
@@ -49,25 +69,14 @@ const Users: React.FC<{ users: User[], refreshUsers: () => void }> = ({ users, r
           })
         }}
       >
-        {numSelected > 0
-          ? (
-            <Typography
-              sx={{ flex: '1 1 100%' }}
-              color="inherit"
-              variant="subtitle1"
-              component="div"
-            >
-              已选择 {numSelected} 个员工
-            </Typography>)
-          : (
-          <Typography
-            sx={{ flex: '1 1 100%' }}
-            variant="h6"
-            id="tableTitle"
-            component="div"
-          >
-            员工管理
-          </Typography>)}
+        <Typography
+          sx={{ flex: '1 1 100%' }}
+          variant="h6"
+          id="tableTitle"
+          component="div"
+        >
+          员工管理
+        </Typography>
         {numSelected > 0
           ? (<Tooltip title="删除">
             <IconButton
@@ -109,94 +118,20 @@ const Users: React.FC<{ users: User[], refreshUsers: () => void }> = ({ users, r
           </Tooltip>)
         }
       </Toolbar>
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  color="primary"
-                  indeterminate={numSelected > 0 && numSelected < users.length}
-                  checked={users.length > 0 && numSelected === users.length}
-                  onChange={e => setSelected(e.target.checked ? users.map(it => it.ID) : [])}
-                />
-              </TableCell>
-              <TableCell>ID</TableCell>
-              <TableCell align='right'>姓名</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(it => {
-              const isItemSelected = selected.includes(it.ID)
-              return (
-                <TableRow
-                  hover
-                  key={it.ID}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  onClick={() => {
-                    const selectedIndex = selected.indexOf(it.ID)
-                    let newSelected: number[] = []
-
-                    if (selectedIndex === -1) {
-                      newSelected = newSelected.concat(selected, it.ID)
-                    } else if (selectedIndex === 0) {
-                      newSelected = newSelected.concat(selected.slice(1))
-                    } else if (selectedIndex === selected.length - 1) {
-                      newSelected = newSelected.concat(selected.slice(0, -1))
-                    } else if (selectedIndex > 0) {
-                      newSelected = newSelected.concat(
-                        selected.slice(0, selectedIndex),
-                        selected.slice(selectedIndex + 1)
-                      )
-                    }
-
-                    setSelected(newSelected)
-                  }}
-                  role="checkbox"
-                  aria-checked={isItemSelected}
-                  tabIndex={-1}
-                  selected={isItemSelected}
-                >
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      color="primary"
-                      checked={isItemSelected}
-                    />
-                  </TableCell>
-                  <TableCell component='th' scope='row'><em>#{it.ID}</em></TableCell>
-                  <TableCell align='right'>
-                    {it.NAME}&nbsp;
-                    <Tooltip title='修改名字'>
-                      <IconButton
-                        size='small'
-                        onClick={e => {
-                          e.stopPropagation()
-                          setName(it.NAME)
-                          setUpdateNameId(it.ID)
-                          setOpen(true)
-                        }}
-                      >
-                        <EditIcon fontSize='small' />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
-        component="div"
-        count={users.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={(_, newPage) => setPage(newPage)}
-        onRowsPerPageChange={e => {
-          setRowsPerPage(parseInt(e.target.value, 10))
-          setPage(0)
-        }}
+      <DataGrid
+        rows={users}
+        columns={columns}
+        pageSize={10}
+        autoHeight
+        rowsPerPageOptions={[5, 10, 20]}
+        checkboxSelection
+        disableSelectionOnClick
+        sx={{ border: 0 }}
+        getRowId={it => it.ID}
+        experimentalFeatures={{ newEditingApi: true }}
+        components={{ Toolbar: GridToolbar }}
+        onSelectionModelChange={setSelected as any}
+        selectionModel={selected}
       />
 
       <Dialog open={open} onClose={() => setOpen(false)}>

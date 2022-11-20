@@ -1,16 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { alpha } from '@mui/material/styles'
 import { useSnackbar, SnackbarKey } from 'notistack'
+import { DataGrid, GridColumns, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid'
 import type { User, Room } from './types'
-import TableContainer from '@mui/material/TableContainer'
 import Paper from '@mui/material/Paper'
-import Table from '@mui/material/Table'
-import TableCell from '@mui/material/TableCell'
-import TableBody from '@mui/material/TableBody'
-import TableHead from '@mui/material/TableHead'
-import TableRow from '@mui/material/TableRow'
 import Typography from '@mui/material/Typography'
-import Checkbox from '@mui/material/Checkbox'
 import Toolbar from '@mui/material/Toolbar'
 import Tooltip from '@mui/material/Tooltip'
 import IconButton from '@mui/material/IconButton'
@@ -27,7 +21,6 @@ import FormControl from '@mui/material/FormControl'
 import InputLabel from '@mui/material/InputLabel'
 import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
-import TablePagination from '@mui/material/TablePagination'
 
 const Rooms: React.FC<{ users: User[] }> = ({ users }) => {
   const [rooms, setRooms] = useState<Room[]>([])
@@ -37,8 +30,6 @@ const Rooms: React.FC<{ users: User[] }> = ({ users }) => {
   const [updateNameId, setUpdateNameId] = useState<number | null>()
   const [updateOwnerId, setUpdateOwnerId] = useState<string | number>('')
   const [snack, setSnack] = useState<SnackbarKey | null>(null)
-  const [page, setPage] = React.useState(0)
-  const [rowsPerPage, setRowsPerPage] = React.useState(5)
   const { enqueueSnackbar, closeSnackbar } = useSnackbar()
   const numSelected = selected.length
 
@@ -57,6 +48,42 @@ const Rooms: React.FC<{ users: User[] }> = ({ users }) => {
     return map
   }, [users])
 
+  const columns: GridColumns = [
+    { field: 'ID', headerName: 'ID', width: 50 },
+    {
+      field: 'NAME',
+      headerName: '实验室名',
+      width: 200
+    },
+    {
+      field: 'OWNER',
+      headerName: '所有者',
+      width: 200,
+      valueGetter: it => map[it.value]
+    },
+    {
+      field: 'actions',
+      type: 'actions',
+      headerName: '操作',
+      width: 50,
+      cellClassName: 'actions',
+      getActions: ({ row }) => [
+        <GridActionsCellItem
+          icon={<EditIcon />}
+          label='编辑'
+          key='edit'
+          color='inherit'
+          onClick={() => {
+            setName(row.NAME)
+            setUpdateNameId(row.ID)
+            setUpdateOwnerId(row.OWNER)
+            setOpen(true)
+          }}
+        />
+      ]
+    }
+  ]
+
   return (
     <Paper sx={{ width: '100%', mb: 2 }}>
       <Toolbar
@@ -69,25 +96,14 @@ const Rooms: React.FC<{ users: User[] }> = ({ users }) => {
           })
         }}
       >
-        {numSelected > 0
-          ? (
-            <Typography
-              sx={{ flex: '1 1 100%' }}
-              color="inherit"
-              variant="subtitle1"
-              component="div"
-            >
-              已选择 {numSelected} 个实验室
-            </Typography>)
-          : (
-          <Typography
-            sx={{ flex: '1 1 100%' }}
-            variant="h6"
-            id="tableTitle"
-            component="div"
-          >
-            实验室管理
-          </Typography>)}
+        <Typography
+          sx={{ flex: '1 1 100%' }}
+          variant="h6"
+          id="tableTitle"
+          component="div"
+        >
+          实验室管理
+        </Typography>
         {numSelected > 0
           ? (<Tooltip title="删除">
             <IconButton
@@ -130,97 +146,20 @@ const Rooms: React.FC<{ users: User[] }> = ({ users }) => {
           </Tooltip>)
         }
       </Toolbar>
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  color="primary"
-                  indeterminate={numSelected > 0 && numSelected < rooms.length}
-                  checked={rooms.length > 0 && numSelected === rooms.length}
-                  onChange={e => setSelected(e.target.checked ? rooms.map(it => it.ID) : [])}
-                />
-              </TableCell>
-              <TableCell>ID</TableCell>
-            <TableCell align='right'>实验室名</TableCell>
-            <TableCell align='right'>所有者</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rooms.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(it => {
-              const isItemSelected = selected.includes(it.ID)
-              return (
-                <TableRow
-                  hover
-                  key={it.ID}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  onClick={() => {
-                    const selectedIndex = selected.indexOf(it.ID)
-                    let newSelected: number[] = []
-
-                    if (selectedIndex === -1) {
-                      newSelected = newSelected.concat(selected, it.ID)
-                    } else if (selectedIndex === 0) {
-                      newSelected = newSelected.concat(selected.slice(1))
-                    } else if (selectedIndex === selected.length - 1) {
-                      newSelected = newSelected.concat(selected.slice(0, -1))
-                    } else if (selectedIndex > 0) {
-                      newSelected = newSelected.concat(
-                        selected.slice(0, selectedIndex),
-                        selected.slice(selectedIndex + 1)
-                      )
-                    }
-
-                    setSelected(newSelected)
-                  }}
-                  role="checkbox"
-                  aria-checked={isItemSelected}
-                  tabIndex={-1}
-                  selected={isItemSelected}
-                >
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      color="primary"
-                      checked={isItemSelected}
-                    />
-                  </TableCell>
-                  <TableCell component='th' scope='row'><em>#{it.ID}</em></TableCell>
-                  <TableCell align='right'>{it.NAME}</TableCell>
-                  <TableCell align='right'>
-                    {map[it.OWNER]}&nbsp;
-                    <Tooltip title='修改信息'>
-                      <IconButton
-                        size='small'
-                        onClick={e => {
-                          e.stopPropagation()
-                          setName(it.NAME)
-                          setUpdateNameId(it.ID)
-                          setUpdateOwnerId(it.OWNER)
-                          setOpen(true)
-                        }}
-                      >
-                        <EditIcon fontSize='small' />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
-        component="div"
-        count={rooms.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={(_, newPage) => setPage(newPage)}
-        onRowsPerPageChange={e => {
-          setRowsPerPage(parseInt(e.target.value, 10))
-          setPage(0)
-        }}
+      <DataGrid
+        rows={rooms}
+        columns={columns}
+        pageSize={10}
+        rowsPerPageOptions={[5, 10, 20]}
+        checkboxSelection
+        disableSelectionOnClick
+        sx={{ border: 0 }}
+        getRowId={it => it.ID}
+        autoHeight
+        experimentalFeatures={{ newEditingApi: true }}
+        components={{ Toolbar: GridToolbar }}
+        onSelectionModelChange={setSelected as any}
+        selectionModel={selected}
       />
 
       <Dialog open={open} onClose={() => setOpen(false)}>
