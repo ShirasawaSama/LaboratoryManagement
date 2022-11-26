@@ -16,9 +16,12 @@ npm run build
 
 ## Run
 
-To run your application:
+Download and unzip the [release](https://github.com/ShirasawaSama/LaboratoryManagement/releases):
+
+Run:
+
 ```
-./gradlew clean run
+java -jar LaboratoryManagement-1.0.0-SNAPSHOT-fat.jar
 ```
 
 ## License
