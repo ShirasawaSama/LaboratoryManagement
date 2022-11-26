@@ -72,9 +72,9 @@ public final class MainVerticle extends AbstractVerticle {
 	private Router initRoutes() {
 		Router router = Router.router(vertx);
 		router.route().handler(BodyHandler.create());
-		router.route("/*").handler(StaticHandler.create("dist"));
 		new Users(this, router);
 		new Rooms(this, router);
+		router.route("/*").handler(StaticHandler.create("dist"));
 		return router;
 	}
 

@@ -41,7 +41,7 @@ dependencies {
 	implementation("io.vertx:vertx-web")
 	implementation("com.h2database:h2:2.1.214")
 	implementation("org.jetbrains:annotations:23.0.0")
-	implementation("io.vertx:vertx-sql-client-templates:4.3.4")
+	implementation("io.vertx:vertx-sql-client-templates:4.3.5")
 	implementation("com.fasterxml.jackson.core:jackson-databind:2.14.0")
 
 	compileOnly("io.vertx:vertx-codegen:4.3.4")
