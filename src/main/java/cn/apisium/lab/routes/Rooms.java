@@ -12,12 +12,13 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Rooms route
  */
-public final class Rooms {
-	private final MainVerticle main;
-
+public final class Rooms extends AbstractRoute {
 	public Rooms(@NotNull MainVerticle main, @NotNull Router router) {
-		this.main = main;
+		super(main, router);
+	}
 
+	@Override
+	public void registerRoutes(@NotNull Router router) {
 		router.get("/api/rooms").respond(this::handleFetchRooms);
 		router.put("/api/room").respond(this::handlePutRoom);
 		router.delete("/api/room").respond(this::handleDeleteUser);

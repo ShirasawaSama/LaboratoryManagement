@@ -14,12 +14,13 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Users route
  */
-public final class Users {
-	private final MainVerticle main;
-
+public final class Users extends AbstractRoute {
 	public Users(@NotNull MainVerticle main, @NotNull Router router) {
-		this.main = main;
+		super(main, router);
+	}
 
+	@Override
+	public void registerRoutes(@NotNull Router router) {
 		router.get("/api/users").respond(this::handleFetchUsers);
 		router.put("/api/user").respond(this::handlePutUser);
 		router.delete("/api/user").respond(this::handleDeleteUser);
