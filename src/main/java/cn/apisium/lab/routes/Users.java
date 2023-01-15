@@ -15,8 +15,8 @@ import org.jetbrains.annotations.NotNull;
  * Users route
  */
 public final class Users extends AbstractRoute {
-	public Users(@NotNull MainVerticle main, @NotNull Router router) {
-		super(main, router);
+	public Users(@NotNull MainVerticle main) {
+		super(main);
 	}
 
 	@Override

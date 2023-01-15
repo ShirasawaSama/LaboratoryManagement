@@ -13,8 +13,8 @@ import org.jetbrains.annotations.NotNull;
  * Rooms route
  */
 public final class Rooms extends AbstractRoute {
-	public Rooms(@NotNull MainVerticle main, @NotNull Router router) {
-		super(main, router);
+	public Rooms(@NotNull MainVerticle main) {
+		super(main);
 	}
 
 	@Override
